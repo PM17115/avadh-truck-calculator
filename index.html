@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Avadh Fleet Service – Truck Fare Calculator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#0f4c75;
+  --secondary:#3282b8;
+  --bg:#f5f7fa;
+  --card:#ffffff;
+  --success:#2ecc71;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--bg);
+  color:#222;
+}
+
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:15px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card h3{
+  margin-top:0;
+  color:var(--primary);
+  font-size:18px;
+  border-bottom:1px solid #eee;
+  padding-bottom:8px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+
+label{
+  font-size:13px;
+  font-weight:bold;
+}
+
+input, select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+.small{
+  font-size:13px;
+  color:#555;
+}
+
+.result{
+  font-size:14px;
+  line-height:1.6;
+}
+
+.highlight{
+  background:var(--success);
+  color:#fff;
+  padding:10px;
+  border-radius:8px;
+  font-weight:bold;
+  text-align:center;
+  margin-top:10px;
+}
+
+.amount{
+  float:right;
+  font-weight:bold;
+}
+
+@media(max-width:600px){
+  header{font-size:18px;}
+}
+</style>
+</head>
+
+<body>
+
+<header>Avadh Fleet Service – Truck Fare Calculator</header>
+
+<div class="container">
+
+<!-- INPUT SECTION -->
+<div class="card">
+<h3>Trip Details</h3>
+<div class="grid">
+<div>
+<label>Trip Type</label>
+<select id="tripType">
+<option value="LOCAL">LOCAL</option>
+<option value="OUTSIDE">OUTSIDE</option>
+</select>
+</div>
+
+<div>
+<label>Total Distance (KM)</label>
+<input type="number" id="distance" value="100">
+</div>
+
+<div>
+<label>Load Weight (TON)</label>
+<input type="number" id="weight" value="5">
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Time & Driver</h3>
+<div class="grid">
+<div>
+<label>Time Type</label>
+<select id="timeType">
+<option value="HOUR">HOUR</option>
+<option value="DAY">DAY</option>
+</select>
+</div>
+
+<div>
+<label>Time Value</label>
+<input type="number" id="timeValue" value="1">
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3>Fuel</h3>
+<div class="grid">
+<div>
+<label>Diesel Price (₹ / Liter)</label>
+<input type="number" id="dieselPrice" value="90">
+</div>
+</div>
+</div>
+
+<div class="card" id="permitCard">
+<h3>Permit</h3>
+<div class="grid">
+<div>
+<label>
+<input type="checkbox" id="permitCheck"> Other State Permit Applied
+</label>
+</div>
+
+<div>
+<label>Permit Cost (₹)</label>
+<input type="number" id="permitCost" value="0">
+</div>
+</div>
+</div>
+
+<!-- RESULT SECTION -->
+<div class="card">
+<h3>ACTUAL COST (Transparent Breakdown)</h3>
+<div class="result" id="actualCost"></div>
+</div>
+
+<div class="card">
+<h3>COST-BASED PRICE</h3>
+<div class="result" id="costBased"></div>
+</div>
+
+<div class="card">
+<h3>WEIGHT-BASED PRICE</h3>
+<div class="result" id="weightBased"></div>
+<div class="highlight">Best Price for Business</div>
+</div>
+
+</div>
+
+<script>
+function calculate(){
+  const tripType = tripTypeEl.value;
+  const km = +distance.value;
+  const wt = +weight.value;
+  const diesel = +dieselPrice.value;
+  const timeType = timeTypeEl.value;
+  const timeVal = +timeValue.value;
+
+  // Fuel Avg
+  let avg = wt<=2?13:wt<=4?10:wt<=6?8:wt<=9?7:wt<=11?6.5:wt<=13?6:5;
+  let fuelCost = (km/avg)*diesel;
+
+  // FASTag (simple slab)
+  let fastag = km * 2;
+
+  // Driver
+  let driver=0;
+  if(timeType==="HOUR"){
+    if(timeVal<4) driver=400;
+    else if(timeVal<=12) driver=800;
+    else driver=800+(timeVal-12)*80;
+  }else{
+    driver=timeVal*800;
+  }
+
+  // Food
+  let food=0;
+  if(tripType==="OUTSIDE" && km>100){
+    food = timeType==="DAY" ? timeVal*300 : 300;
+  }
+
+  // Documentation
+  let doc = timeType==="HOUR" ? timeVal*17 : timeVal*200;
+
+  // Depreciation
+  let dep = km * 1;
+
+  // Permit
+  let permit = (tripType==="OUTSIDE" && permitCheck.checked) ? +permitCost.value : 0;
+
+  let actual = fuelCost+fastag+driver+food+doc+dep+permit;
+
+  // Margin
+  let marginRate = tripType==="LOCAL"?0.80:0.45;
+  let marginAmt = actual*marginRate;
+
+  let costPrice = actual+marginAmt;
+
+  // Weight multiplier
+  let mul = wt<=5?1:wt<=9?1.25:wt<=13?1.5:1.8;
+  let weightPrice = costPrice*mul;
+  let perTon = Math.max(weightPrice/wt,100);
+  let weightProfit = weightPrice-actual;
+
+  // DISPLAY
+  actualCost.innerHTML = `
+Fuel <span class="amount">₹${fuelCost.toFixed(0)}</span><br>
+FASTag <span class="amount">₹${fastag}</span><br>
+Driver <span class="amount">₹${driver}</span><br>
+Food <span class="amount">₹${food}</span><br>
+Documentation <span class="amount">₹${doc}</span><br>
+Depreciation <span class="amount">₹${dep}</span><br>
+Permit <span class="amount">₹${permit}</span><hr>
+<b>Total Actual Cost <span class="amount">₹${actual.toFixed(0)}</span></b>
+`;
+
+  costBased.innerHTML = `
+Selling Price <span class="amount">₹${costPrice.toFixed(0)}</span><br>
+Profit <span class="amount">₹${marginAmt.toFixed(0)}</span>
+`;
+
+  weightBased.innerHTML = `
+Selling Price <span class="amount">₹${weightPrice.toFixed(0)}</span><br>
+Per Ton Rate <span class="amount">₹${perTon.toFixed(0)}</span><br>
+Profit <span class="amount">₹${weightProfit.toFixed(0)}</span>
+`;
+}
+
+// Elements
+const tripTypeEl = document.getElementById("tripType");
+const timeTypeEl = document.getElementById("timeType");
+const permitCheck = document.getElementById("permitCheck");
+const permitCard = document.getElementById("permitCard");
+
+// Events
+document.querySelectorAll("input,select").forEach(el=>{
+  el.addEventListener("input",calculate);
+});
+
+// Auto hide permit
+tripTypeEl.addEventListener("change",()=>{
+  permitCard.style.display = tripTypeEl.value==="OUTSIDE"?"block":"none";
+  calculate();
+});
+
+calculate();
+</script>
+
+</body>
+</html>
