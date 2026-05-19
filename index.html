@@ -345,44 +345,58 @@ function calculate(){
       wt<=13 ? 4.5 : 4;
   }
 
-  // FUEL
+  // FUEL COST
+
   let fuelCost = (km / avg) * diesel;
 
   // FASTAG
+
   let fastag = km * 2;
 
-  // DRIVER
+  // DRIVER CHARGES
+
   let driver = 0;
 
-  if(timeType === "HOUR"){
+  if(tripType === "LOCAL"){
 
-    if(timeVal < 4){
-      driver = 400;
-    }
-    else if(timeVal <= 12){
-      driver = 800;
-    }
-    else{
-      driver = 800 + ((timeVal - 12) * 80);
+    if(timeType === "HOUR"){
+
+      if(timeVal < 4){
+        driver = 350;
+      }
+      else if(timeVal <= 12){
+        driver = 700;
+      }
+      else{
+        driver = 700 + ((timeVal - 12) * 70);
+      }
+
+    }else{
+      driver = timeVal * 700;
     }
 
   }else{
-    driver = timeVal * 800;
-  }
 
-  // FOOD
-  let food = 0;
+    if(timeType === "HOUR"){
 
-  if(tripType === "OUTSIDE" && km > 100){
+      if(timeVal < 4){
+        driver = 400;
+      }
+      else if(timeVal <= 12){
+        driver = 800;
+      }
+      else{
+        driver = 800 + ((timeVal - 12) * 80);
+      }
 
-    if(timeType === "DAY"){
-      food = timeVal * 300;
     }else{
-      food = 300;
+      driver = timeVal * 800;
     }
+
   }
 
   // DOCUMENTATION
+
   let documentation = 0;
 
   if(timeType === "HOUR"){
@@ -392,9 +406,11 @@ function calculate(){
   }
 
   // DEPRECIATION
+
   let depreciation = km * 1;
 
   // PERMIT
+
   let permit = 0;
 
   if(tripType === "OUTSIDE" && permitCheck.checked){
@@ -402,30 +418,34 @@ function calculate(){
   }
 
   // ACTUAL COST
+
   let actual =
     fuelCost +
     fastag +
     driver +
-    food +
     documentation +
     depreciation +
     permit;
 
   // MARGIN
+
   let marginRate = tripType === "LOCAL" ? 0.80 : 0.45;
 
   let marginAmount = actual * marginRate;
 
-  // COST BASED
+  // COST BASED PRICE
+
   let costBasedPrice = actual + marginAmount;
 
   // WEIGHT MULTIPLIER
+
   let multiplier =
     wt<=5 ? 1 :
     wt<=9 ? 1.25 :
     wt<=13 ? 1.5 : 1.8;
 
-  // WEIGHT BASED
+  // WEIGHT BASED PRICE
+
   let weightPrice = costBasedPrice * multiplier;
 
   let perTon = Math.max(weightPrice / wt, 100);
@@ -440,7 +460,6 @@ function calculate(){
 Fuel Cost <span class="amount">${money(fuelCost)}</span><br>
 FASTag <span class="amount">${money(fastag)}</span><br>
 Driver Charges <span class="amount">${money(driver)}</span><br>
-Food Charges <span class="amount">${money(food)}</span><br>
 Documentation <span class="amount">${money(documentation)}</span><br>
 Depreciation <span class="amount">${money(depreciation)}</span><br>
 Permit <span class="amount">${money(permit)}</span><br>
