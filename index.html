@@ -6,13 +6,13 @@
 <title>Avadh Fleet Service – Truck Fare Calculator</title>
 
 <style>
+
 :root{
   --primary:#0f4c75;
   --secondary:#3282b8;
   --success:#2ecc71;
   --bg:#f4f7fb;
   --card:#ffffff;
-  --text:#222;
 }
 
 *{
@@ -24,7 +24,6 @@
 body{
   font-family:Arial, Helvetica, sans-serif;
   background:var(--bg);
-  color:var(--text);
 }
 
 header{
@@ -34,8 +33,6 @@ header{
   text-align:center;
   font-size:24px;
   font-weight:bold;
-  letter-spacing:0.5px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.15);
 }
 
 .container{
@@ -64,12 +61,6 @@ header{
   border-radius:14px;
   padding:18px;
   box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 18px rgba(0,0,0,0.12);
 }
 
 .card h3{
@@ -98,11 +89,6 @@ input, select{
   border:1px solid #ccc;
   border-radius:8px;
   font-size:14px;
-  outline:none;
-}
-
-input:focus, select:focus{
-  border-color:var(--secondary);
 }
 
 .result{
@@ -123,7 +109,6 @@ input:focus, select:focus{
   border-radius:10px;
   margin-top:15px;
   font-weight:bold;
-  font-size:16px;
 }
 
 button{
@@ -133,8 +118,6 @@ button{
   padding:12px 18px;
   border-radius:8px;
   cursor:pointer;
-  font-size:14px;
-  transition:0.3s;
 }
 
 button:hover{
@@ -148,6 +131,7 @@ button:hover{
 }
 
 @media(max-width:900px){
+
   .container{
     grid-template-columns:1fr;
   }
@@ -156,7 +140,9 @@ button:hover{
     position:relative;
     top:0;
   }
+
 }
+
 </style>
 </head>
 
@@ -168,15 +154,18 @@ Avadh Fleet Service – Truck Fare Calculator
 
 <div class="container">
 
-<!-- LEFT SECTION -->
+<!-- LEFT -->
+
 <div class="left-section">
 
 <div class="top-actions">
 <button onclick="window.print()">Print Invoice</button>
 </div>
 
-<!-- Trip Details -->
+<!-- TRIP -->
+
 <div class="card">
+
 <h3>Trip Details</h3>
 
 <div class="grid">
@@ -191,19 +180,21 @@ Avadh Fleet Service – Truck Fare Calculator
 
 <div>
 <label>Total Distance (KM)</label>
-<input type="number" id="distance" min="1" value="100">
+<input type="number" id="distance" value="100">
 </div>
 
 <div>
 <label>Load Weight (TON)</label>
-<input type="number" id="weight" min="1" value="5">
+<input type="number" id="weight" value="5">
 </div>
 
 </div>
 </div>
 
-<!-- Time -->
+<!-- TIME -->
+
 <div class="card">
+
 <h3>Time & Driver</h3>
 
 <div class="grid">
@@ -218,28 +209,32 @@ Avadh Fleet Service – Truck Fare Calculator
 
 <div>
 <label>Time Value</label>
-<input type="number" id="timeValue" min="1" value="1">
+<input type="number" id="timeValue" value="1">
 </div>
 
 </div>
 </div>
 
-<!-- Fuel -->
+<!-- FUEL -->
+
 <div class="card">
+
 <h3>Fuel</h3>
 
 <div class="grid">
 
 <div>
 <label>Diesel Price (₹ / Liter)</label>
-<input type="number" id="dieselPrice" min="1" step="0.01" value="94.54">
+<input type="number" id="dieselPrice" value="94.54">
 </div>
 
 </div>
 </div>
 
-<!-- Permit -->
+<!-- PERMIT -->
+
 <div class="card" id="permitCard">
+
 <h3>Permit</h3>
 
 <div class="grid">
@@ -253,7 +248,35 @@ Other State Permit Applied
 
 <div>
 <label>Permit Cost (₹)</label>
-<input type="number" id="permitCost" min="0" value="0">
+<input type="number" id="permitCost" value="0">
+</div>
+
+</div>
+</div>
+
+<!-- EXTRA -->
+
+<div class="card">
+
+<h3>Extra Options</h3>
+
+<div class="grid">
+
+<div>
+<label>
+<input type="checkbox" id="returnLoad">
+Return Load Available
+</label>
+</div>
+
+<div id="returnAmountBox" style="display:none;">
+<label>Return Load Amount (₹)</label>
+<input type="number" id="returnAmount" value="0">
+</div>
+
+<div>
+<label>Number of Deliveries</label>
+<input type="number" id="deliveries" value="0">
 </div>
 
 </div>
@@ -261,29 +284,30 @@ Other State Permit Applied
 
 </div>
 
-<!-- RIGHT SECTION -->
+<!-- RIGHT -->
+
 <div class="right-section">
 
-<!-- Actual Cost -->
 <div class="card">
-<h3>ACTUAL COST (Transparent Breakdown)</h3>
+<h3>ACTUAL COST</h3>
 <div class="result" id="actualCost"></div>
 </div>
 
-<!-- Cost Based -->
 <div class="card">
 <h3>COST-BASED PRICE</h3>
 <div class="result" id="costBased"></div>
 </div>
 
-<!-- Weight Based -->
 <div class="card">
-<h3>WEIGHT-BASED PRICE</h3>
+
+<h3>FINAL FREIGHT</h3>
+
 <div class="result" id="weightBased"></div>
 
 <div class="highlight">
 Best Price for Business
 </div>
+
 </div>
 
 </div>
@@ -292,36 +316,58 @@ Best Price for Business
 
 <script>
 
-const tripTypeEl = document.getElementById("tripType");
-const timeTypeEl = document.getElementById("timeType");
-const permitCard = document.getElementById("permitCard");
-const permitCheck = document.getElementById("permitCheck");
+const tripTypeEl =
+document.getElementById("tripType");
 
-const dieselInput = document.getElementById("dieselPrice");
+const permitCard =
+document.getElementById("permitCard");
 
-// LOCAL STORAGE
-dieselInput.value = localStorage.getItem("dieselPrice") || 94.54;
+const returnLoadEl =
+document.getElementById("returnLoad");
 
-// INR FORMAT
+const returnAmountBox =
+document.getElementById("returnAmountBox");
+
 function money(value){
+
   return new Intl.NumberFormat('en-IN',{
+
     style:'currency',
     currency:'INR',
     maximumFractionDigits:0
+
   }).format(value);
+
 }
 
 function calculate(){
 
-  const tripType = tripTypeEl.value;
-  const km = +document.getElementById("distance").value || 0;
-  const wt = +document.getElementById("weight").value || 0;
-  const diesel = +dieselInput.value || 0;
-  const timeType = timeTypeEl.value;
-  const timeVal = +document.getElementById("timeValue").value || 0;
+  const tripType =
+  tripTypeEl.value;
 
-  // SAVE DIESEL
-  localStorage.setItem("dieselPrice", diesel);
+  const km =
+  +document.getElementById("distance").value || 0;
+
+  const wt =
+  +document.getElementById("weight").value || 0;
+
+  const diesel =
+  +document.getElementById("dieselPrice").value || 0;
+
+  const timeType =
+  document.getElementById("timeType").value;
+
+  const timeVal =
+  +document.getElementById("timeValue").value || 0;
+
+  const returnLoad =
+  document.getElementById("returnLoad").checked;
+
+  const returnAmount =
+  +document.getElementById("returnAmount").value || 0;
+
+  const deliveries =
+  +document.getElementById("deliveries").value || 0;
 
   // FUEL AVERAGE
 
@@ -330,37 +376,36 @@ function calculate(){
   if(tripType === "LOCAL"){
 
     avg =
-      wt<=2 ? 13 :
-      wt<=4 ? 10 :
-      wt<=6 ? 6 :
-      wt<=9 ? 5.5 :
-      wt<=11 ? 5 :
-      wt<=13 ? 4.5 : 4;
+    wt<=2 ? 13 :
+    wt<=4 ? 10 :
+    wt<=6 ? 6 :
+    wt<=9 ? 5.5 :
+    wt<=11 ? 5 :
+    wt<=13 ? 4.5 : 4;
 
   }else{
 
     avg =
-      wt<=2 ? 13 :
-      wt<=4 ? 10 :
-      wt<=6 ? 8 :
-      wt<=9 ? 6.5 :
-      wt<=11 ? 5 :
-      wt<=13 ? 4.5 : 4;
+    wt<=2 ? 13 :
+    wt<=4 ? 10 :
+    wt<=6 ? 8 :
+    wt<=9 ? 6.5 :
+    wt<=11 ? 5 :
+    wt<=13 ? 4.5 : 4;
+
   }
 
   // FUEL COST
 
-  let fuelCost = 0;
-
-  if(km > 0 && avg > 0 && diesel > 0){
-    fuelCost = (km / avg) * diesel;
-  }
+  let fuelCost =
+  (km / avg) * diesel;
 
   // FASTAG
 
-  let fastag = km * 2;
+  let fastag =
+  km * 2;
 
-  // DRIVER CHARGES
+  // DRIVER
 
   let driver = 0;
 
@@ -369,17 +414,25 @@ function calculate(){
     if(timeType === "HOUR"){
 
       if(timeVal < 4){
+
         driver = 350;
-      }
-      else if(timeVal <= 12){
+
+      }else if(timeVal <= 12){
+
         driver = 700;
-      }
-      else{
-        driver = 700 + ((timeVal - 12) * 70);
+
+      }else{
+
+        driver =
+        700 + ((timeVal - 12) * 70);
+
       }
 
     }else{
-      driver = timeVal * 700;
+
+      driver =
+      timeVal * 700;
+
     }
 
   }else{
@@ -387,137 +440,357 @@ function calculate(){
     if(timeType === "HOUR"){
 
       if(timeVal < 4){
+
         driver = 400;
-      }
-      else if(timeVal <= 12){
+
+      }else if(timeVal <= 12){
+
         driver = 800;
-      }
-      else{
-        driver = 800 + ((timeVal - 12) * 80);
+
+      }else{
+
+        driver =
+        800 + ((timeVal - 12) * 80);
+
       }
 
     }else{
-      driver = timeVal * 800;
+
+      driver =
+      timeVal * 800;
+
     }
 
   }
 
   // DOCUMENTATION
 
-  let documentation = 0;
-
-  if(timeType === "HOUR"){
-    documentation = timeVal * 17;
-  }else{
-    documentation = timeVal * 200;
-  }
+  let documentation =
+  timeType === "HOUR"
+  ? timeVal * 17
+  : timeVal * 200;
 
   // DEPRECIATION
 
-  let depreciation = km * 1;
+  let depreciation =
+  km * 1;
+
+  // DELIVERY INCOME
+
+  let deliveryRate =
+  tripType === "LOCAL"
+  ? 200
+  : 300;
+
+  let deliveryIncome =
+  deliveries * deliveryRate;
 
   // PERMIT
 
   let permit = 0;
 
-  if(tripType === "OUTSIDE" && permitCheck.checked){
-    permit = +document.getElementById("permitCost").value || 0;
+  if(
+    tripType === "OUTSIDE" &&
+    document.getElementById("permitCheck").checked
+  ){
+
+    permit =
+    +document.getElementById("permitCost").value || 0;
+
   }
 
   // ACTUAL COST
 
   let actual =
-    fuelCost +
-    fastag +
-    driver +
-    documentation +
-    depreciation +
-    permit;
+
+  fuelCost +
+  fastag +
+  driver +
+  documentation +
+  depreciation +
+  permit;
 
   // MARGIN
 
-  let marginRate = tripType === "LOCAL" ? 0.80 : 0.45;
-
-  let marginAmount = actual * marginRate;
+  let marginRate =
+  tripType === "LOCAL"
+  ? 0.80
+  : 0.45;
 
   // COST BASED PRICE
 
-  let costBasedPrice = actual + marginAmount;
+  let costBasedPrice =
+  actual + (actual * marginRate);
 
   // WEIGHT MULTIPLIER
 
   let multiplier =
-    wt<=5 ? 1 :
-    wt<=9 ? 1.25 :
-    wt<=13 ? 1.5 : 1.8;
+  wt<=5 ? 1 :
+  wt<=9 ? 1.25 :
+  wt<=13 ? 1.5 : 1.8;
 
-  // WEIGHT BASED PRICE
+  // ORIGINAL SELLING PRICE
 
-  let weightPrice = costBasedPrice * multiplier;
+  let originalSellingPrice =
+  costBasedPrice * multiplier;
 
-  let perTon = wt > 0
-    ? Math.max(weightPrice / wt, 100)
-    : 0;
+  // FINAL SELLING PRICE
+  // SELLING + DELIVERY
 
-  let profit = weightPrice - actual;
+  let finalSellingPrice =
+  originalSellingPrice +
+  deliveryIncome;
 
-  let profitPercent = actual > 0
-    ? (profit / actual) * 100
-    : 0;
+  // LOCAL RETURN LOAD
 
-  // DISPLAY
+  let localReturnIncome = 0;
+
+  if(
+    tripType === "LOCAL" &&
+    returnLoad
+  ){
+
+    localReturnIncome =
+    finalSellingPrice * 0.50;
+
+  }
+
+  // TOTAL FREIGHT
+
+  let totalFreight =
+  finalSellingPrice;
+
+  // LOCAL RETURN LOAD ADD
+
+  if(
+    tripType === "LOCAL" &&
+    returnLoad
+  ){
+
+    totalFreight =
+    finalSellingPrice +
+    localReturnIncome;
+
+  }
+
+  // OUTSIDE RETURN LOAD MINUS
+
+  if(
+    tripType === "OUTSIDE" &&
+    returnLoad
+  ){
+
+    totalFreight =
+    finalSellingPrice -
+    returnAmount;
+
+  }
+
+  // PER TON
+
+  let perTon =
+  wt > 0
+  ? totalFreight / wt
+  : 0;
+
+  // PER KM
+
+  let perKmCost =
+  km > 0
+  ? actual / km
+  : 0;
+
+  let perKmRate =
+  km > 0
+  ? totalFreight / km
+  : 0;
+
+  // PROFIT
+
+  let profit =
+  totalFreight - actual;
+
+  let profitPercent =
+  actual > 0
+  ? (profit / actual) * 100
+  : 0;
+
+  // ACTUAL COST UI
 
   document.getElementById("actualCost").innerHTML = `
-Fuel Average <span class="amount">${avg} km/l</span><br>
-Fuel Cost <span class="amount">${money(fuelCost)}</span><br>
-FASTag <span class="amount">${money(fastag)}</span><br>
-Driver Charges <span class="amount">${money(driver)}</span><br>
-Documentation <span class="amount">${money(documentation)}</span><br>
-Depreciation <span class="amount">${money(depreciation)}</span><br>
-Permit <span class="amount">${money(permit)}</span><br>
+
+Fuel Average
+<span class="amount">${avg} km/l</span><br>
+
+Fuel Cost
+<span class="amount">${money(fuelCost)}</span><br>
+
+FASTag
+<span class="amount">${money(fastag)}</span><br>
+
+Driver Charges
+<span class="amount">${money(driver)}</span><br>
+
+Documentation
+<span class="amount">${money(documentation)}</span><br>
+
+Depreciation
+<span class="amount">${money(depreciation)}</span><br>
+
+Permit
+<span class="amount">${money(permit)}</span><br>
+
 <hr>
-<b>Total Actual Cost <span class="amount">${money(actual)}</span></b>
+
+<b>
+Total Actual Cost
+<span class="amount">${money(actual)}</span>
+</b>
+
 `;
+
+  // COST BASED PRICE UI
 
   document.getElementById("costBased").innerHTML = `
-Selling Price <span class="amount">${money(costBasedPrice)}</span><br>
-Profit <span class="amount">${money(marginAmount)}</span>
+
+Original Selling Price
+<span class="amount">
+${money(originalSellingPrice)}
+</span><br>
+
+Delivery Income
+<span class="amount">
+${money(deliveryIncome)}
+</span><br>
+
+<b>
+Final Selling Price
+<span class="amount">
+${money(finalSellingPrice)}
+</span>
+</b>
+
 `;
 
+  // FINAL FREIGHT UI
+
   document.getElementById("weightBased").innerHTML = `
-Selling Price <span class="amount">${money(weightPrice)}</span><br>
-Per Ton Rate <span class="amount">${money(perTon)}</span><br>
-Profit <span class="amount">${money(profit)}</span><br>
-Profit Margin <span class="amount">${profitPercent.toFixed(1)}%</span>
+
+Final Selling Price
+<span class="amount">
+${money(finalSellingPrice)}
+</span><br>
+
+${
+tripType === "LOCAL"
+? `
+Local Return Load Income
+<span class="amount">
+${money(localReturnIncome)}
+</span><br>
+`
+: `
+Return Load Minus
+<span class="amount">
+-${money(returnAmount)}
+</span><br>
+`
+}
+
+<hr>
+
+<b>
+Total Freight Rate
+<span class="amount">
+${money(totalFreight)}
+</span>
+</b><br><br>
+
+Per KM Cost
+<span class="amount">
+${money(perKmCost)}
+</span><br>
+
+Per KM Rate
+<span class="amount">
+${money(perKmRate)}
+</span><br>
+
+Per Ton Rate
+<span class="amount">
+${money(perTon)}
+</span><br>
+
+Trip Profit
+<span class="amount">
+${money(profit)}
+</span><br>
+
+Profit Margin
+<span class="amount">
+${profitPercent.toFixed(1)}%
+</span><br>
+
+Return Load
+<span class="amount">
+${returnLoad ? "YES" : "NO"}
+</span>
+
 `;
 
 }
 
-// AUTO CALCULATE
+// TOGGLE
 
-document.querySelectorAll("input, select").forEach(el=>{
-  el.addEventListener("input", calculate);
-});
-
-// PERMIT SHOW/HIDE
-
-tripTypeEl.addEventListener("change", ()=>{
+function toggleFields(){
 
   permitCard.style.display =
-    tripTypeEl.value === "OUTSIDE"
-    ? "block"
-    : "none";
-
-  calculate();
-});
-
-// INITIAL
-
-permitCard.style.display =
   tripTypeEl.value === "OUTSIDE"
   ? "block"
   : "none";
 
+  if(
+    tripTypeEl.value === "OUTSIDE" &&
+    returnLoadEl.checked
+  ){
+
+    returnAmountBox.style.display =
+    "block";
+
+  }else{
+
+    returnAmountBox.style.display =
+    "none";
+
+  }
+
+}
+
+// EVENTS
+
+document.querySelectorAll("input,select").forEach(el=>{
+
+  el.addEventListener("input",calculate);
+
+});
+
+tripTypeEl.addEventListener("change",()=>{
+
+  toggleFields();
+  calculate();
+
+});
+
+returnLoadEl.addEventListener("change",()=>{
+
+  toggleFields();
+  calculate();
+
+});
+
+// INIT
+
+toggleFields();
 calculate();
 
 </script>
