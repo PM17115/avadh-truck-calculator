@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -375,11 +376,19 @@ input:focus, select:focus {
           </select>
         </div>
         <div>
-          <label>Chassis Setup</label>
-          <select id="truckSize">
-            <option value="17">17 FT Fleet</option>
-            <option value="22">22 FT Fleet</option>
+          <label>Truck Type</label>
+          <select id="truckType">
+            <option value="BOLERO">BOLERO PICKUP</option>
+            <option value="1059">EICHER 1059</option>
+            <option value="2059">EICHER 2059</option>
+            <option value="2095">EICHER 2095</option>
+            <option value="2010">EICHER 2010</option>
+            <option value="2118">EICHER 2118</option>
           </select>
+        </div>
+        <div>
+          <label>Deck Size</label>
+          <select id="truckSize"></select>
         </div>
         <div>
           <label>Logistics Distance (KM)</label>
@@ -387,7 +396,7 @@ input:focus, select:focus {
         </div>
         <div>
           <label>Payload Weight (TON)</label>
-          <input type="number" id="weight" value="5" min="0">
+          <input type="number" id="weight" readonly>
         </div>
         <div>
           <label>Terminal Diesel Price</label>
@@ -501,6 +510,49 @@ input:focus, select:focus {
 let chart;
 let currentCalculatedData = {}; // Global layout holder to assist share string generation
 
+const truckDatabase = {
+BOLERO:{weight:2,decks:[9]},
+"1059":{weight:3.5,decks:[14]},
+"2059":{weight:5,decks:[17]},
+"2095":{weight:7,decks:[17,20,22]},
+"2010":{weight:10,decks:[20,22]},
+"2118":{weight:12,decks:[20,22]}
+};
+
+const fuelConsumption = {
+BOLERO:{LOCAL:11,OUTSIDE:13},
+"1059":{LOCAL:10,OUTSIDE:11},
+"2059":{LOCAL:8,OUTSIDE:10},
+"2095":{LOCAL:6,OUTSIDE:8},
+"2010":{LOCAL:5.5,OUTSIDE:7},
+"2118":{LOCAL:4,OUTSIDE:5.5}
+};
+
+
+const operatingCost={
+BOLERO:{fastag:1.3,driver:600,localDep:3.6,outDep:2,maint:1,doc:53},
+"1059":{fastag:1.3,driver:700,localDep:5.5,outDep:3.6,maint:1.1,doc:53},
+"2059":{fastag:1.5,driver:700,localDep:6.4,outDep:4,maint:1.2,doc:81},
+"2095":{fastag:1.5,driver:700,localDep:7.6,outDep:4,maint:1.4,doc:102},
+"2010":{fastag:2.2,driver:700,localDep:8.4,outDep:5,maint:1.5,doc:140},
+"2118":{fastag:2.5,driver:700,localDep:12,outDep:7,maint:2,doc:140}
+};
+
+function updateTruckData(){
+const truck=document.getElementById("truckType").value;
+const data=truckDatabase[truck];
+document.getElementById("weight").value=data.weight;
+const deck=document.getElementById("truckSize");
+deck.innerHTML='';
+data.decks.forEach(d=>{
+const o=document.createElement("option");
+o.value=d;
+o.textContent=d+" FT";
+deck.appendChild(o);
+});
+}
+
+
 function toggleTheme() {
   const body = document.documentElement;
   const currentTheme = body.getAttribute("data-theme");
@@ -526,7 +578,8 @@ function money(v){
 
 function calculate(){
   const tripType = document.getElementById("tripType").value;
-  const truckSize = document.getElementById("truckSize").value;
+  const truckType=document.getElementById("truckType").value;
+  const truckSize = +document.getElementById("truckSize").value;
   const km = Math.max(0, +document.getElementById("distance").value || 0);
   const wt = Math.max(0, +document.getElementById("weight").value || 0);
   const diesel = Math.max(0, +document.getElementById("dieselPrice").value || 0);
@@ -535,41 +588,38 @@ function calculate(){
   const timeType = document.getElementById("timeType").value;
   const timeValue = Math.max(0, +document.getElementById("timeValue").value || 0);
 
-  let avg = 4;
-  if(tripType === "LOCAL"){
-    avg = wt<=2 ? 13 : wt<=4 ? 10 : wt<=6 ? 6 : wt<=9 ? 5.5 : wt<=11 ? 5 : wt<=13 ? 4.5 : 4;
-  } else {
-    avg = wt<=2 ? 13 : wt<=4 ? 10 : wt<=6 ? 8 : wt<=9 ? 6.5 : wt<=11 ? 5 : wt<=13 ? 4.5 : 4;
-  }
+  let avg = fuelConsumption[truckType][tripType];
 
   let fuel = avg > 0 ? (km / avg) * diesel : 0;
-  let fastag = km * 2;
-  let depreciation = km * 1;
-  let documentation = timeType === "HOUR" ? timeValue * 17 : timeValue * 200;
+  const costData=operatingCost[truckType];
 
-  let driver = 0;
-  if(tripType === "LOCAL"){
-    driver = timeType === "DAY" ? timeValue * 700 : 700;
-  } else {
-    driver = timeType === "DAY" ? timeValue * 800 : 800;
-  }
+let fastag = km * costData.fastag;
+let maintenance = km * costData.maint;
+let depreciationRate = tripType === "LOCAL" ? costData.localDep : costData.outDep;
+let depreciation = km * depreciationRate;
+let documentation = timeType === "DAY" ? timeValue * costData.doc : costData.doc;
+let driver = timeType === "DAY" ? timeValue * costData.driver : costData.driver;
 
-  let permit = 0;
+let permit = 0;
   if(tripType === "OUTSIDE" && document.getElementById("permitCheck").value === "YES"){
     permit = Math.max(0, +document.getElementById("permitCost").value || 0);
   }
 
-  let actualCost = fuel + fastag + driver + documentation + depreciation + permit;
-  let margin = tripType === "LOCAL" ? 0.80 : 0.45;
+  let actualCost = fuel + fastag + driver + documentation + depreciation + maintenance + permit;
+  let margin = 0.30;
   let costBasedPrice = actualCost + (actualCost * margin);
-  let weightMultiplier = wt<=5 ? 1 : wt<=9 ? 1.20 : wt<=13 ? 1.5 : 1.8;
+  // No weight multiplier applied
+let weightMultiplier = 1;
 
-  let originalSellingPrice = costBasedPrice * weightMultiplier;
+let originalSellingPrice = costBasedPrice;
   let deliveryIncome = deliveries * (tripType === "LOCAL" ? 200 : 300);
   let finalSellingPrice = originalSellingPrice + deliveryIncome;
 
-  let truckMultiplier = truckSize === "22" ? 1.20 : 1.0;
-  finalSellingPrice *= truckMultiplier;
+  let truckMultiplier=1;
+if(truckSize===20) truckMultiplier=1.10;
+else if(truckSize===22) truckMultiplier=1.20;
+
+finalSellingPrice *= truckMultiplier;
 
   let returnIncome = 0;
   let totalFreight = finalSellingPrice;
@@ -579,7 +629,7 @@ function calculate(){
   }
 
   let profit = totalFreight - actualCost;
-  let profitPercent = actualCost > 0 ? (profit / actualCost) * 100 : 0;
+  let profitPercent = 30;
 
   let perKmCost = km > 0 ? actualCost / km : 0;
   let perKmRate = km > 0 ? totalFreight / km : 0;
@@ -587,7 +637,7 @@ function calculate(){
 
   // Cache data block state globally for Exporter use
   currentCalculatedData = {
-    tripType, truckSize, km, wt, finalFreight: totalFreight, perKmRate, perTon, deliveries, returnLoad
+    tripType,truckType, truckSize, km, wt, finalFreight: totalFreight, perKmRate, perTon, deliveries, returnLoad
   };
 
   document.getElementById("kpiCost").innerHTML = money(actualCost);
@@ -608,14 +658,17 @@ function calculate(){
     <div class="result-item"><span>⛽ Fuel Allocation Expense</span><b>${money(fuel)}</b></div>
     <div class="result-item"><span>🛣 FASTag Corridor Fee</span><b>${money(fastag)}</b></div>
     <div class="result-item"><span>👨‍✈️ Driver Compensation</span><b>${money(driver)}</b></div>
-    <div class="result-item"><span>📄 Terminal Documentation</span><b>${money(documentation)}</b></div>
+    <div class="result-item"><span>📄 Terminal Documentation</span><b>${money(documentation)}</b></div><div class="result-item"><span>🧰 Maintenance Cost</span><b>${money(maintenance)}</b></div>
     <div class="result-item"><span>🔧 Fleet Asset Depreciation</span><b>${money(depreciation)}</b></div>
     <div class="result-item"><span>📑 Statutory Permit Clearance</span><b>${money(permit)}</b></div>
     <div class="result-item"><span>⚖️ Target Fleet Efficiency</span><b>${avg} KM/L</b></div>
   `;
 
   document.getElementById("freightAnalysis").innerHTML = `
-    <div class="result-item"><span>📦 Payload Tonnage Factor</span><b>${weightMultiplier}x</b></div>
+    <div class="result-item">
+    <span>📦 Payload Weight</span>
+    <b>${wt} TON</b>
+</div>
     <div class="result-item"><span>🚚 Deck Footprint Multiplier</span><b>${truckMultiplier}x</b></div>
     <div class="result-item"><span>💰 Multi-Drop Ancillary Value</span><b>${money(deliveryIncome)}</b></div>
     <div class="result-item"><span>🔁 Backhaul Settlement Credit</span><b>${money(returnIncome)}</b></div>
@@ -672,7 +725,8 @@ _Commercial Freight Quotation_
 *Trip Configuration Details:*
 ---------------------------------------
 • Trip Assignment Type : ${d.tripType}
-• Truck Chassis Config : ${d.truckSize} FT Fleet
+• Truck Type : ${d.truckType}
+• Truck Deck Size : ${d.truckSize} FT
 • Route Logged Distance : ${d.km} KM
 • Cargo Weight Loading : ${d.wt} TON
 • Multi-Drop Deliveries : ${d.deliveries}
@@ -695,13 +749,9 @@ document.querySelectorAll("input, select").forEach(element => {
   element.addEventListener("change", calculate);
 });
 
-window.addEventListener('DOMContentLoaded', calculate);
+document.getElementById('truckType').addEventListener('change',()=>{updateTruckData();calculate();});
+window.addEventListener('DOMContentLoaded',()=>{updateTruckData();calculate();});
 </script>
 
 </body>
-</html>"""
-
-# Writing the string content to an offline HTML payload file
-with open("avadh_fleet_service_tool.html", "w", encoding="utf-8") as f:
-    f.write(app_code)
-print("File Generated Successfully.")
+</html>
