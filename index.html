@@ -606,7 +606,7 @@ let permit = 0;
   }
 
   let actualCost = fuel + fastag + driver + documentation + depreciation + maintenance + permit;
-  let margin = 0.30;
+  let margin = tripType === "LOCAL" ? 0.45 : 0.30;
   let costBasedPrice = actualCost + (actualCost * margin);
   // No weight multiplier applied
 let weightMultiplier = 1;
@@ -629,7 +629,7 @@ finalSellingPrice *= truckMultiplier;
   }
 
   let profit = totalFreight - actualCost;
-  let profitPercent = 30;
+  let profitPercent = margin * 100;
 
   let perKmCost = km > 0 ? actualCost / km : 0;
   let perKmRate = km > 0 ? totalFreight / km : 0;
